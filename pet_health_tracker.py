@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import datetime
-import matplotlib.pyplot as plt
+import matplotlib as plt
 
 st.set_page_config(page_title="Pet Health Tracker", layout="wide")
 
