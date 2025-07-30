@@ -81,30 +81,50 @@ diet_df['Date'] = datetime.date.today()
 
 # Filter for selected date
 filtered = diet_df[diet_df['Date'] == selected_date]
+elif menu == "Diet":
+    st.header("🍽️ Diet Menu")
+    with st.form("diet_form"):
+        col1, col2 = st.columns(2)
+        pet = col1.text_input("Pet Name", key="diet_pet")
+        meal = col2.selectbox("Meal Time", ["Morning", "Afternoon", "Evening"])
+        food = col1.text_input("Food")
+        qty = col2.text_input("Quantity")
+        unit = col1.selectbox("Unit", ["grams", "ml", "cups", "pieces"])
+        submit = st.form_submit_button("Add Diet Record")
+        if submit:
+            new = pd.DataFrame([[pet, meal, food, qty, unit]], columns=st.session_state.diet_data.columns)
+            st.session_state.diet_data = pd.concat([st.session_state.diet_data, new], ignore_index=True)
+            st.success("✅ Diet record added!")
 
-if filtered.empty:
-    st.info("No diet records found for this date.")
-else:
-    # Conversion map
-    conversion = {"grams": 1, "ml": 1, "cups": 240, "pieces": 50}
-    
-    # Convert Quantity to grams
-    def convert_to_grams(row):
-        try:
-            qty = float(row["Quantity"])
-            factor = conversion.get(row["Unit"], 1)
-            return qty * factor
-        except:
-            return 0
-    
-    filtered["Grams"] = filtered.apply(convert_to_grams, axis=1)
+    st.dataframe(st.session_state.diet_data)
 
-    # Group by food
-    pie_data = filtered.groupby("Food")["Grams"].sum()
+    # === DIET VISUALIZATION: Pie Chart === #
+    st.markdown("### 🥗 Daily Diet Breakdown")
+    selected_date = st.date_input("Select a date to visualize", datetime.date.today(), key="viz_date")
 
-    st.markdown("#### 🧁 Food Distribution (grams)")
-    st.pyplot(pie_data.plot.pie(autopct="%1.1f%%", ylabel="", figsize=(5, 5)).figure)
+    diet_df = st.session_state.diet_data.copy()
+    diet_df['Date'] = datetime.date.today()  # temporary static date
 
+    filtered = diet_df[diet_df['Date'] == selected_date]
+
+    if filtered.empty:
+        st.info("No diet records found for this date.")
+    else:
+        conversion = {"grams": 1, "ml": 1, "cups": 240, "pieces": 50}
+
+        def convert_to_grams(row):
+            try:
+                qty = float(row["Quantity"])
+                factor = conversion.get(row["Unit"], 1)
+                return qty * factor
+            except:
+                return 0
+
+        filtered["Grams"] = filtered.apply(convert_to_grams, axis=1)
+        pie_data = filtered.groupby("Food")["Grams"].sum()
+
+        st.markdown("#### 🧁 Food Distribution (grams)")
+        st.pyplot(pie_data.plot.pie(autopct="%1.1f%%", ylabel="", figsize=(5, 5)).figure)
 
 # ========= GALLERY SECTION ========= #
 elif menu == "Gallery":
@@ -115,6 +135,3 @@ elif menu == "Gallery":
         st.success("Photo uploaded successfully!")
     else:
         st.info("Upload an image to view it here.")
-
-
-
