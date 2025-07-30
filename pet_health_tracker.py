@@ -1,12 +1,12 @@
 import streamlit as st
 import pandas as pd
 import datetime
+import matplotlib.pyplot as plt
 
-# ========= Header Section (no image) ========= #
 st.title("🐾 Pet Health Tracker")
 st.subheader("Track your pet's vaccinations, medications, and meals — with love 💖")
 
-# ========= Session Initialization ========= #
+# ========== Session State ==========
 if 'vaccine_data' not in st.session_state:
     st.session_state.vaccine_data = pd.DataFrame(columns=['Pet Name', 'Vaccine', 'Date'])
 
@@ -16,10 +16,10 @@ if 'medication_data' not in st.session_state:
 if 'diet_data' not in st.session_state:
     st.session_state.diet_data = pd.DataFrame(columns=['Pet Name', 'Meal Time', 'Food', 'Quantity', 'Unit'])
 
-# ========= Navigation ========= #
+# ========== Sidebar Menu ==========
 menu = st.sidebar.radio("🧭 Navigation", ["Vaccination", "Medications", "Diet", "Gallery"])
 
-# ========= VACCINATION SECTION ========= #
+# ========== Vaccination ==========
 if menu == "Vaccination":
     st.header("💉 Vaccination Records")
     with st.form("vaccine_form"):
@@ -34,7 +34,7 @@ if menu == "Vaccination":
             st.success("✅ Vaccine added!")
     st.dataframe(st.session_state.vaccine_data)
 
-# ========= MEDICATIONS SECTION ========= #
+# ========== Medications ==========
 elif menu == "Medications":
     st.header("💊 Medication Tracker")
     with st.form("med_form"):
@@ -51,36 +51,7 @@ elif menu == "Medications":
             st.success("✅ Medication added!")
     st.dataframe(st.session_state.medication_data)
 
-# ========= DIET SECTION ========= #
-elif menu == "Diet":
-    st.header("🍽️ Diet Menu")
-    with st.form("diet_form"):
-        col1, col2 = st.columns(2)
-        pet = col1.text_input("Pet Name", key="diet_pet")
-        meal = col2.selectbox("Meal Time", ["Morning", "Afternoon", "Evening"])
-        food = col1.text_input("Food")
-        qty = col2.text_input("Quantity")
-        unit = col1.selectbox("Unit", ["grams", "ml", "cups", "pieces"])
-        submit = st.form_submit_button("Add Diet Record")
-        if submit:
-            new = pd.DataFrame([[pet, meal, food, qty, unit]], columns=st.session_state.diet_data.columns)
-            st.session_state.diet_data = pd.concat([st.session_state.diet_data, new], ignore_index=True)
-            st.success("✅ Diet record added!")
-    st.dataframe(st.session_state.diet_data)
-    # === DIET VISUALIZATION: Pie Chart === #
-st.markdown("### 🥗 Daily Diet Breakdown")
-
-# User selects a date to visualize
-selected_date = st.date_input("Select a date to visualize", datetime.date.today(), key="viz_date")
-
-# Filter rows for selected date
-diet_df = st.session_state.diet_data.copy()
-
-# Add a dummy 'Date' column assuming all entries are for today (you can enhance this later)
-diet_df['Date'] = datetime.date.today()
-
-# Filter for selected date
-filtered = diet_df[diet_df['Date'] == selected_date]
+# ========== Diet ==========
 elif menu == "Diet":
     st.header("🍽️ Diet Menu")
     with st.form("diet_form"):
@@ -98,14 +69,15 @@ elif menu == "Diet":
 
     st.dataframe(st.session_state.diet_data)
 
-    # === DIET VISUALIZATION: Pie Chart === #
+    # ========== Diet Chart ==========
     st.markdown("### 🥗 Daily Diet Breakdown")
     selected_date = st.date_input("Select a date to visualize", datetime.date.today(), key="viz_date")
 
+    # TEMP: Add dummy date to all for demo
     diet_df = st.session_state.diet_data.copy()
-    diet_df['Date'] = datetime.date.today()  # temporary static date
+    diet_df["Date"] = datetime.date.today()
 
-    filtered = diet_df[diet_df['Date'] == selected_date]
+    filtered = diet_df[diet_df["Date"] == selected_date]
 
     if filtered.empty:
         st.info("No diet records found for this date.")
@@ -124,9 +96,12 @@ elif menu == "Diet":
         pie_data = filtered.groupby("Food")["Grams"].sum()
 
         st.markdown("#### 🧁 Food Distribution (grams)")
-        st.pyplot(pie_data.plot.pie(autopct="%1.1f%%", ylabel="", figsize=(5, 5)).figure)
+        fig, ax = plt.subplots()
+        pie_data.plot.pie(autopct="%1.1f%%", ax=ax)
+        ax.set_ylabel("")
+        st.pyplot(fig)
 
-# ========= GALLERY SECTION ========= #
+# ========== Gallery ==========
 elif menu == "Gallery":
     st.header("📸 Pet Gallery")
     uploaded = st.file_uploader("Upload a photo of your pet 🐶🐱", type=["png", "jpg", "jpeg"])
