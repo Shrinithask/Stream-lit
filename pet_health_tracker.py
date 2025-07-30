@@ -67,6 +67,44 @@ elif menu == "Diet":
             st.session_state.diet_data = pd.concat([st.session_state.diet_data, new], ignore_index=True)
             st.success("✅ Diet record added!")
     st.dataframe(st.session_state.diet_data)
+    # === DIET VISUALIZATION: Pie Chart === #
+st.markdown("### 🥗 Daily Diet Breakdown")
+
+# User selects a date to visualize
+selected_date = st.date_input("Select a date to visualize", datetime.date.today(), key="viz_date")
+
+# Filter rows for selected date
+diet_df = st.session_state.diet_data.copy()
+
+# Add a dummy 'Date' column assuming all entries are for today (you can enhance this later)
+diet_df['Date'] = datetime.date.today()
+
+# Filter for selected date
+filtered = diet_df[diet_df['Date'] == selected_date]
+
+if filtered.empty:
+    st.info("No diet records found for this date.")
+else:
+    # Conversion map
+    conversion = {"grams": 1, "ml": 1, "cups": 240, "pieces": 50}
+    
+    # Convert Quantity to grams
+    def convert_to_grams(row):
+        try:
+            qty = float(row["Quantity"])
+            factor = conversion.get(row["Unit"], 1)
+            return qty * factor
+        except:
+            return 0
+    
+    filtered["Grams"] = filtered.apply(convert_to_grams, axis=1)
+
+    # Group by food
+    pie_data = filtered.groupby("Food")["Grams"].sum()
+
+    st.markdown("#### 🧁 Food Distribution (grams)")
+    st.pyplot(pie_data.plot.pie(autopct="%1.1f%%", ylabel="", figsize=(5, 5)).figure)
+
 
 # ========= GALLERY SECTION ========= #
 elif menu == "Gallery":
