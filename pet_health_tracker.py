@@ -2,35 +2,45 @@ import streamlit as st
 import pandas as pd
 import datetime
 
-# Header image (replace URL or upload your own)
-st.image("https://cdn.pixabay.com/photo/2016/11/18/18/51/dog-1839808_960_720.jpg", use_column_width=True)
-
-# Custom CSS for colors and fonts
+# ========= Custom CSS with theme-aware design ========= #
 st.markdown("""
     <style>
-    .main {
-        background-color: #f0f7f7;
+    html, body, .main {
+        background: linear-gradient(to bottom right, #ffffff, #e0f7fa);
+        color: inherit !important;
+        font-family: 'Segoe UI', sans-serif;
     }
-    h1, h2, h3 {
-        color: #2a9d8f;
+    [data-testid="stHeader"] {
+        background-color: transparent;
     }
     .stButton>button {
         background-color: #2a9d8f;
         color: white;
         font-weight: bold;
+        border-radius: 8px;
+        padding: 0.4em 1em;
     }
-    .st-bd {
-        background-color: #e0f7fa;
+    .stRadio > div {
+        background-color: #f2f2f2;
         border-radius: 10px;
         padding: 10px;
+    }
+    .css-18ni7ap, .css-1d391kg {
+        background-color: transparent !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
+# ========= Header Image ========= #
+st.image("https://images.unsplash.com/photo-1601758123927-1961e6f20144", 
+         caption="Welcome to Pet Health Tracker", 
+         use_container_width=True)
+
+# ========= Page Title ========= #
 st.title("🐾 Pet Health Tracker")
 st.subheader("Track your pet's vaccinations, medications, and meals — with love 💖")
 
-# Session state initialization
+# ========= Initialize Session Data ========= #
 if 'vaccine_data' not in st.session_state:
     st.session_state.vaccine_data = pd.DataFrame(columns=['Pet Name', 'Vaccine', 'Date'])
 
@@ -38,17 +48,18 @@ if 'medication_data' not in st.session_state:
     st.session_state.medication_data = pd.DataFrame(columns=['Pet Name', 'Medication', 'Dosage', 'Start Date', 'End Date'])
 
 if 'diet_data' not in st.session_state:
-    st.session_state.diet_data = pd.DataFrame(columns=['Pet Name', 'Meal Time', 'Food', 'Quantity'])
+    st.session_state.diet_data = pd.DataFrame(columns=['Pet Name', 'Meal Time', 'Food', 'Quantity', 'Unit'])
 
+# ========= Sidebar Navigation ========= #
 menu = st.sidebar.radio("🧭 Navigation", ["Vaccination", "Medications", "Diet", "Gallery"])
 
-# ====== Vaccination ======
+# ========= VACCINATION SECTION ========= #
 if menu == "Vaccination":
     st.header("💉 Vaccination Records")
     with st.form("vaccine_form"):
         col1, col2 = st.columns(2)
         pet = col1.text_input("Pet Name")
-        vaccine = col2.text_input("Vaccine")
+        vaccine = col2.text_input("Vaccine Name")
         date = st.date_input("Vaccination Date", datetime.date.today())
         submit = st.form_submit_button("Add Record")
         if submit:
@@ -57,7 +68,7 @@ if menu == "Vaccination":
             st.success("✅ Vaccine added!")
     st.dataframe(st.session_state.vaccine_data)
 
-# ====== Medications ======
+# ========= MEDICATIONS SECTION ========= #
 elif menu == "Medications":
     st.header("💊 Medication Tracker")
     with st.form("med_form"):
@@ -74,7 +85,7 @@ elif menu == "Medications":
             st.success("✅ Medication added!")
     st.dataframe(st.session_state.medication_data)
 
-# ====== Diet ======
+# ========= DIET SECTION ========= #
 elif menu == "Diet":
     st.header("🍽️ Diet Menu")
     with st.form("diet_form"):
@@ -82,23 +93,24 @@ elif menu == "Diet":
         pet = col1.text_input("Pet Name", key="diet_pet")
         meal = col2.selectbox("Meal Time", ["Morning", "Afternoon", "Evening"])
         food = col1.text_input("Food")
-        qty = col2.text_input("Quantity (g)")
+        qty = col2.text_input("Quantity")
+        unit = col1.selectbox("Unit", ["grams", "ml", "cups", "pieces"])
         submit = st.form_submit_button("Add Diet Record")
         if submit:
-            new = pd.DataFrame([[pet, meal, food, qty]], columns=st.session_state.diet_data.columns)
+            new = pd.DataFrame([[pet, meal, food, qty, unit]], columns=st.session_state.diet_data.columns)
             st.session_state.diet_data = pd.concat([st.session_state.diet_data, new], ignore_index=True)
             st.success("✅ Diet record added!")
     st.dataframe(st.session_state.diet_data)
 
-# ====== Gallery ======
+# ========= GALLERY SECTION ========= #
 elif menu == "Gallery":
     st.header("📸 Pet Gallery")
-    uploaded = st.file_uploader("Upload a cute photo of your pet 🐶🐱", type=["png", "jpg", "jpeg"])
+    uploaded = st.file_uploader("Upload a photo of your pet 🐶🐱", type=["png", "jpg", "jpeg"])
     if uploaded:
-        st.image(uploaded, caption="Your Pet!", use_column_width=True)
+        st.image(uploaded, caption="Your Pet!", use_container_width=True)
         st.success("Photo uploaded successfully!")
-
-    st.markdown("You can also use this section to keep records of appearance, accessories, or IDs.")
+    else:
+        st.info("Upload an image to view it here.")
 
 
 
