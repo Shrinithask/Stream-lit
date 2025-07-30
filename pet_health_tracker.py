@@ -2,45 +2,11 @@ import streamlit as st
 import pandas as pd
 import datetime
 
-# ========= Custom CSS with theme-aware design ========= #
-st.markdown("""
-    <style>
-    html, body, .main {
-        background: linear-gradient(to bottom right, #ffffff, #e0f7fa);
-        color: inherit !important;
-        font-family: 'Segoe UI', sans-serif;
-    }
-    [data-testid="stHeader"] {
-        background-color: transparent;
-    }
-    .stButton>button {
-        background-color: #2a9d8f;
-        color: white;
-        font-weight: bold;
-        border-radius: 8px;
-        padding: 0.4em 1em;
-    }
-    .stRadio > div {
-        background-color: #f2f2f2;
-        border-radius: 10px;
-        padding: 10px;
-    }
-    .css-18ni7ap, .css-1d391kg {
-        background-color: transparent !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# ========= Header Image ========= #
-st.image("https://images.unsplash.com/photo-1601758123927-1961e6f20144", 
-         caption="Welcome to Pet Health Tracker", 
-         use_container_width=True)
-
-# ========= Page Title ========= #
+# ========= Header Section (no image) ========= #
 st.title("🐾 Pet Health Tracker")
 st.subheader("Track your pet's vaccinations, medications, and meals — with love 💖")
 
-# ========= Initialize Session Data ========= #
+# ========= Session Initialization ========= #
 if 'vaccine_data' not in st.session_state:
     st.session_state.vaccine_data = pd.DataFrame(columns=['Pet Name', 'Vaccine', 'Date'])
 
@@ -50,7 +16,7 @@ if 'medication_data' not in st.session_state:
 if 'diet_data' not in st.session_state:
     st.session_state.diet_data = pd.DataFrame(columns=['Pet Name', 'Meal Time', 'Food', 'Quantity', 'Unit'])
 
-# ========= Sidebar Navigation ========= #
+# ========= Navigation ========= #
 menu = st.sidebar.radio("🧭 Navigation", ["Vaccination", "Medications", "Diet", "Gallery"])
 
 # ========= VACCINATION SECTION ========= #
