@@ -2,19 +2,35 @@ import streamlit as st
 import pandas as pd
 import datetime
 
-# Try to import matplotlib only if needed
-try:
-    import matplotlib.pyplot as plt
-    MATPLOTLIB_AVAILABLE = True
-except ImportError:
-    MATPLOTLIB_AVAILABLE = False
+# Header image (replace URL or upload your own)
+st.image("https://cdn.pixabay.com/photo/2016/11/18/18/51/dog-1839808_960_720.jpg", use_column_width=True)
 
-st.set_page_config(page_title="Pet Health Tracker", layout="wide")
+# Custom CSS for colors and fonts
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f0f7f7;
+    }
+    h1, h2, h3 {
+        color: #2a9d8f;
+    }
+    .stButton>button {
+        background-color: #2a9d8f;
+        color: white;
+        font-weight: bold;
+    }
+    .st-bd {
+        background-color: #e0f7fa;
+        border-radius: 10px;
+        padding: 10px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-st.title("🐾 Pet Health Tracker App")
-st.markdown("Manage your pet's **vaccinations**, **medications**, and **diet** easily.")
+st.title("🐾 Pet Health Tracker")
+st.subheader("Track your pet's vaccinations, medications, and meals — with love 💖")
 
-# Initialize session state
+# Session state initialization
 if 'vaccine_data' not in st.session_state:
     st.session_state.vaccine_data = pd.DataFrame(columns=['Pet Name', 'Vaccine', 'Date'])
 
@@ -24,73 +40,65 @@ if 'medication_data' not in st.session_state:
 if 'diet_data' not in st.session_state:
     st.session_state.diet_data = pd.DataFrame(columns=['Pet Name', 'Meal Time', 'Food', 'Quantity'])
 
-# Sidebar navigation
-menu = st.sidebar.radio("Go to", ["Vaccination Records", "Medications", "Diet Menu", "Visualization"])
+menu = st.sidebar.radio("🧭 Navigation", ["Vaccination", "Medications", "Diet", "Gallery"])
 
-# ================= Vaccination Tab =================
-if menu == "Vaccination Records":
+# ====== Vaccination ======
+if menu == "Vaccination":
     st.header("💉 Vaccination Records")
     with st.form("vaccine_form"):
-        pet = st.text_input("Pet Name")
-        vaccine = st.text_input("Vaccine Name")
+        col1, col2 = st.columns(2)
+        pet = col1.text_input("Pet Name")
+        vaccine = col2.text_input("Vaccine")
         date = st.date_input("Vaccination Date", datetime.date.today())
         submit = st.form_submit_button("Add Record")
         if submit:
-            new_entry = pd.DataFrame([[pet, vaccine, date]], columns=st.session_state.vaccine_data.columns)
-            st.session_state.vaccine_data = pd.concat([st.session_state.vaccine_data, new_entry], ignore_index=True)
-            st.success("Vaccination record added.")
-
+            new = pd.DataFrame([[pet, vaccine, date]], columns=st.session_state.vaccine_data.columns)
+            st.session_state.vaccine_data = pd.concat([st.session_state.vaccine_data, new], ignore_index=True)
+            st.success("✅ Vaccine added!")
     st.dataframe(st.session_state.vaccine_data)
 
-# ================= Medications Tab =================
+# ====== Medications ======
 elif menu == "Medications":
     st.header("💊 Medication Tracker")
     with st.form("med_form"):
-        pet = st.text_input("Pet Name", key="med_pet")
-        med = st.text_input("Medication")
-        dose = st.text_input("Dosage")
-        start = st.date_input("Start Date", datetime.date.today(), key="med_start")
-        end = st.date_input("End Date", datetime.date.today(), key="med_end")
+        col1, col2 = st.columns(2)
+        pet = col1.text_input("Pet Name", key="med_pet")
+        medication = col2.text_input("Medication")
+        dosage = st.text_input("Dosage")
+        start = col1.date_input("Start Date", datetime.date.today())
+        end = col2.date_input("End Date", datetime.date.today())
         submit = st.form_submit_button("Add Medication")
         if submit:
-            new_entry = pd.DataFrame([[pet, med, dose, start, end]], columns=st.session_state.medication_data.columns)
-            st.session_state.medication_data = pd.concat([st.session_state.medication_data, new_entry], ignore_index=True)
-            st.success("Medication added.")
-
+            new = pd.DataFrame([[pet, medication, dosage, start, end]], columns=st.session_state.medication_data.columns)
+            st.session_state.medication_data = pd.concat([st.session_state.medication_data, new], ignore_index=True)
+            st.success("✅ Medication added!")
     st.dataframe(st.session_state.medication_data)
 
-# ================= Diet Tab =================
-elif menu == "Diet Menu":
+# ====== Diet ======
+elif menu == "Diet":
     st.header("🍽️ Diet Menu")
     with st.form("diet_form"):
-        pet = st.text_input("Pet Name", key="diet_pet")
-        meal = st.selectbox("Meal Time", ["Morning", "Afternoon", "Evening"])
-        food = st.text_input("Food")
-        qty = st.text_input("Quantity (g)")
+        col1, col2 = st.columns(2)
+        pet = col1.text_input("Pet Name", key="diet_pet")
+        meal = col2.selectbox("Meal Time", ["Morning", "Afternoon", "Evening"])
+        food = col1.text_input("Food")
+        qty = col2.text_input("Quantity (g)")
         submit = st.form_submit_button("Add Diet Record")
         if submit:
-            new_entry = pd.DataFrame([[pet, meal, food, qty]], columns=st.session_state.diet_data.columns)
-            st.session_state.diet_data = pd.concat([st.session_state.diet_data, new_entry], ignore_index=True)
-            st.success("Diet record added.")
-
+            new = pd.DataFrame([[pet, meal, food, qty]], columns=st.session_state.diet_data.columns)
+            st.session_state.diet_data = pd.concat([st.session_state.diet_data, new], ignore_index=True)
+            st.success("✅ Diet record added!")
     st.dataframe(st.session_state.diet_data)
 
-# ================= Visualization =================
-elif menu == "Visualization":
-    st.header("📊 Vaccine Distribution")
+# ====== Gallery ======
+elif menu == "Gallery":
+    st.header("📸 Pet Gallery")
+    uploaded = st.file_uploader("Upload a cute photo of your pet 🐶🐱", type=["png", "jpg", "jpeg"])
+    if uploaded:
+        st.image(uploaded, caption="Your Pet!", use_column_width=True)
+        st.success("Photo uploaded successfully!")
 
-    if not MATPLOTLIB_AVAILABLE:
-        st.error("matplotlib is not installed. Please add it to requirements.txt.")
-    elif st.session_state.vaccine_data.empty:
-        st.info("No vaccination data available to plot.")
-    else:
-        counts = st.session_state.vaccine_data['Vaccine'].value_counts()
-        fig, ax = plt.subplots()
-        counts.plot(kind='bar', ax=ax)
-        ax.set_title("Vaccines Administered")
-        ax.set_xlabel("Vaccine")
-        ax.set_ylabel("Count")
-        st.pyplot(fig)
+    st.markdown("You can also use this section to keep records of appearance, accessories, or IDs.")
 
-    st.markdown("🔁 Add more data from the sidebar to see updated graphs.")
+
 
